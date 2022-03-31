@@ -1,12 +1,17 @@
 import { chain, externalSchematic, Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { addPackages, copyTemplate, mergeWithPackageJson } from '../common';
 import { SchemaOptions } from './schema';
+import { randomUUID } from 'crypto';
 
 export function teamsApp(options: SchemaOptions): Rule {
   return async (tree: Tree, context: SchematicContext) => {
     return chain([
       generateNewApp(options),
-      copyTemplate(options),
+      copyTemplate({
+        ...options,
+        id: randomUUID(),
+        entityId: randomUUID()
+      }),
       addPackages(options, {
         'dependencies': {
           '@microsoft/teams-js': '^1.11.0',
