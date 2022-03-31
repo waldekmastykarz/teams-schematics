@@ -5,7 +5,8 @@ import { InteractionStatus } from '@azure/msal-browser';
 import { AccessTokenEntity, AccountEntity } from '@azure/msal-common';
 import * as microsoftTeams from "@microsoft/teams-js";
 import jwtDecode from "jwt-decode";
-import { filter, firstValueFrom, Observable, of, switchMap } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { filter, first, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { TeamsService } from './teams.service';
 
@@ -56,7 +57,7 @@ export class TeamsGuard implements CanActivate {
 
         this.msalGuard.canActivate(route, state);
 
-        return firstValueFrom(this.msalBroadcastService.inProgress$
+        return this.msalBroadcastService.inProgress$
           .pipe(
             filter((status: InteractionStatus) => status === InteractionStatus.None),
             switchMap(() => {
@@ -66,8 +67,9 @@ export class TeamsGuard implements CanActivate {
 
               this.authService.redirectUrl = state.url;
               return of(this.router.parseUrl('/login'));
-            })
-          ))
+            }),
+            first()
+          ).toPromise();
       });
   }
 
